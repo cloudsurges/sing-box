@@ -1,3 +1,6 @@
+// https://github.com/cloudsurges/sing-box/blob/main/ProxiesProfile.json
+// https://githubusercontent.cloudsurge.store/cloudsurges/sing-box/main/ProxiesProfile.json
+
 {
   //日志 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
   "log": {
@@ -357,7 +360,6 @@
     { "tag": "GLOBAL", "type": "selector", "outbounds": [ "Proxy" ] },
 
     //{ "tag": "Proxies•Subscribe", "type": "selector", "outbounds": [ "" ] },
-
     { "type": "direct","tag": "direct" },
     { "type": "block","tag": "block" },
     { "type": "dns","tag": "dns-out" },
@@ -371,7 +373,7 @@
     { "type": "selector", "tag": "Google","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
     { "type": "selector", "tag": "Youtube","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
     { "type": "selector", "tag": "Telegram","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
-    { "tag": "Final", "type": "selector", "outbounds": ["Proxy","Direct"] },
+    { "type": "selector", "tag": "Final","outbounds": ["Proxy","Direct"],"default": "Direct","interrupt_exist_connections": false},
     {
       "tag": "HongKong01",
       "type": "trojan",
