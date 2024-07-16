@@ -96,8 +96,6 @@
       },
       { "clash_mode": "direct", "server": "DNS•Local" },
       { "clash_mode": "global", "server": "DNS•Remote" },
-      //{ "geosite": ["cn"],"server": "DNS•Local"},
-      //{ "geoip": ["cn"],"server": "DNS•Local"},
       { "domain_suffix": [".cn"],"server": "DNS•Local" },
       { "rule_set": [ "adblock" ], "server": "Block•DNS" },
       { "rule_set": ["geoip-cn","geosite-cn"],"server": "DNS•Local" },
@@ -120,9 +118,9 @@
       "tag": "mixed-in",
       "listen": "::",
       "listen_port": 65535,
-      "tcp_fast_open": true,
+      "tcp_fast_open": false,
       "tcp_multi_path": false,
-      "udp_fragment": true,
+      "udp_fragment": false,
       "udp_timeout": "5m",
       "sniff": true,
       "sniff_override_destination": false,
@@ -215,27 +213,7 @@
 
   //路由 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
   "route": {
-    //Geodata规则集：https://github.com/DustinWin/ruleset_geodata
-    /*
-    "geoip": {
-      "path": "geoip.db",
-      "download_url": "https://github.com/SagerNet/sing-geoip/releases/latest/download/geoip.db",
-      //"download_url": "https://cdn.jsdelivr.net/gh/soffchen/sing-geoip@release/geoip.db",
-      "download_detour": "Direct"
-    },
-    "geosite": {
-      "path": "geosite.db",
-      "download_url": "https://github.com/SagerNet/sing-geosite/releases/latest/download/geosite.db",
-      "download_detour": "Direct"
-    },
-    */
     "rule_set": [
-      //{ "type": "remote", "tag": "tag",
-        //"format": "source", // or binary
-        //"url": "",
-        //"download_detour": "", // optional
-        //"update_interval": "" // optional
-      //},
       {
         "tag": "adblock",
         "type": "remote",
@@ -313,6 +291,14 @@
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
         "download_detour": "direct",
         "update_interval": "86400s"
+      },
+      {
+        "tag": "Proxylist",
+        "type": "remote",
+        "format": "source",
+        "url": "https://raw.githubusercontent.com/yangchuansheng/sing-box-geosite/main/rule/Global.json",
+        "download_detour": "direct",
+        "update_interval": "86400s"
       }
     ],
     "rules": [
@@ -341,7 +327,8 @@
       { "rule_set": ["google"], "outbound": "Google"},
       { "rule_set": ["youtube"], "outbound": "Youtube"},
       { "rule_set": ["telegram"], "outbound": "Telegram"},
-      { "rule_set": ["geolocation-!cn","locationcn"], "outbound": "Proxy"}
+      { "rule_set": ["geolocation-!cn","locationcn"], "outbound": "Proxy"},
+      { "rule_set": ["Proxylist"], "outbound": "Proxy"}
     ],
     "final": "Final",
     //仅支持 Linux、Windows 和 macOS
@@ -366,8 +353,8 @@
     { "type": "block","tag": "block" },
     { "type": "dns","tag": "dns-out" },
 
-    { "type": "urltest", "tag": "Nodelist•Automatic", "outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08"],"url": "https://www.gstatic.com/generate_204","interval": "3m","tolerance": 50,"idle_timeout": "30m","interrupt_exist_connections":false},
-    { "type": "selector", "tag": "Nodelist•Manual","outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08"],"default": "","interrupt_exist_connections": false},
+    { "type": "urltest", "tag": "Nodelist•Automatic", "outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08","IEPL|香港1","IEPL|香港2","IEPL|香港3","IEPL|新加坡","IEPL|台湾"],"url": "https://www.gstatic.com/generate_204","interval": "3m","tolerance": 50,"idle_timeout": "30m","interrupt_exist_connections":false},
+    { "type": "selector", "tag": "Nodelist•Manual","outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08","IEPL|香港1","IEPL|香港2","IEPL|香港3","IEPL|新加坡","IEPL|台湾"],"default": "","interrupt_exist_connections": false},
 
     { "type": "selector", "tag": "Adblock","outbounds": ["Reject","Direct"],"default": "Reject","interrupt_exist_connections": false},
     { "type": "selector", "tag": "Adguard","outbounds": ["Reject","Direct"],"default": "Reject","interrupt_exist_connections": false},
@@ -376,262 +363,60 @@
     { "type": "selector", "tag": "Youtube","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
     { "type": "selector", "tag": "Telegram","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
     { "type": "selector", "tag": "Final","outbounds": ["Proxy","Direct"],"default": "Direct","interrupt_exist_connections": false},
-    {
-      "tag": "HongKong01",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20001,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+
+    { "tag": "HongKong01", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20001, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong02",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20002,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong02", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20002, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong03",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20003,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong03", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20003, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong04",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20004,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong04", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20004, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong05",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20005,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong05", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20005, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong06",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20006,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong06", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20006, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong07",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20007,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong07", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20007, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "HongKong08",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20008,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "HongKong08", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20008, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan01",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20011,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan01", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20011, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan02",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20012,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan02", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20012, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan03",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20013,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan03", "type": "trojan","server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20013, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true,"fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan04",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20014,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan04", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20014, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan05",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20015,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan05", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20015, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan06",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20016,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan06", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20016, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan07",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20017,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
+    { "tag": "Taiwan07", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20017, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
     },
-    {
-      "tag": "Taiwan08",
-      "type": "trojan",
-      "server": "oss-cn-guangzhou.solidigm-nvme.com",
-      "server_port": 20018,
-      "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": {
-        "enabled": true,
-        "server_name": "mmbiz.qpic.cn",
-        "insecure": true,
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        }
-      }
-    }  
+    { "tag": "Taiwan08", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20018, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
+      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
+    },
+    { "tag": "IEPL|香港1", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10931, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
+    { "tag": "IEPL|香港2", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10920, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
+    { "tag": "IEPL|香港3", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10933, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
+    { "tag": "IEPL|新加坡", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10934, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
+    { "tag": "IEPL|台湾", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10936, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" }  
   ],
 
   //实验性 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
