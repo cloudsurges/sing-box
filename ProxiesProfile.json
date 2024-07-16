@@ -117,15 +117,15 @@
       "type": "mixed",
       "tag": "mixed-in",
       "listen": "::",
-      "listen_port": 65535,
+      "listen_port": 32768,
       "tcp_fast_open": false,
       "tcp_multi_path": false,
       "udp_fragment": false,
-      "udp_timeout": "5m",
+      //"udp_timeout": "5m",
       "sniff": true,
       "sniff_override_destination": false,
-      "udp_disable_domain_unmapping": false,
-      "sniff_timeout": "300ms",
+      //"udp_disable_domain_unmapping": false,
+      //"sniff_timeout": "300ms",
       "domain_strategy": "prefer_ipv4"
       //仅支持 Linux、Android、Windows 和 macOS
       //"set_system_proxy": false
@@ -153,11 +153,11 @@
       //"route_address": ["0.0.0.0/1","128.0.0.0/1","::/1","8000::/1"],
       //"route_exclude_address": ["192.168.0.0/16","fc00::/7"],
       "mtu": 9000,
-      "gso": false,
+      //"gso": false,
       "auto_route": true,
       "strict_route": true,
       "endpoint_independent_nat": false,
-      "udp_timeout": "5m",
+      //"udp_timeout": "5m",
       "stack": "system",
       //"stack": "mixed",
       //"include_interface": [ "lan0" ],
@@ -172,7 +172,7 @@
         "http_proxy": {
           "enabled": true,
           "server": "127.0.0.1",
-          "server_port": 65535,
+          "server_port": 32768,
           "bypass_domain": [],
           "match_domain": []
         }
@@ -187,7 +187,7 @@
       "type": "tproxy",
       "tag": "tproxy-in",
       "listen": "::",
-      "listen_port": 65535,
+      "listen_port": 32768,
       "network": "udp",
       //"tcp_fast_open": true,
       //"tcp_multi_path": false,
@@ -302,24 +302,13 @@
       }
     ],
     "rules": [
-      {
-        "type": "logical",
-        "mode": "or",
-        "rules": [ { "protocol": "dns" },{ "port": 53 } ],
-        "outbound": "dns-out"
-      },
+      { "type": "logical", "mode": "or", "rules": [ { "protocol": "dns" },{ "port": 53 } ], "outbound": "dns-out" },
       { "clash_mode": "direct","outbound": "direct" },
       { "clash_mode": "global","outbound": "GLOBAL" },
       { "domain": [ "example.com" , ".cn" ],"outbound": "direct" },
       { "rule_set": ["adblock"], "outbound": "Adblock"},
       { "rule_set": ["adguard"], "outbound": "Adguard"},
-      /*  
-      { "type": "logical", "mode": "or",
-        "rules": [ { "geoip" :["cn","private"] }, { "geosite":["cn","private"] } ],
-        //"ip_is_private": true,
-        "outbound": "Direct"
-      },
-      */
+      //{ "type": "logical", "mode": "or", "rules": [ { "geoip" :["cn","private"] }, { "geosite":["cn","private"] } ], "outbound": "Direct" },
       { "type": "logical", "mode": "or",
         "rules": [ {"rule_set": "geoip-cn"} ,{"rule_set": ["geosite-cn"] } ,{"ip_is_private": true} ],
         "outbound": "direct"
@@ -327,8 +316,7 @@
       { "rule_set": ["google"], "outbound": "Google"},
       { "rule_set": ["youtube"], "outbound": "Youtube"},
       { "rule_set": ["telegram"], "outbound": "Telegram"},
-      { "rule_set": ["geolocation-!cn","locationcn"], "outbound": "Proxy"},
-      { "rule_set": ["Proxylist"], "outbound": "Proxy"}
+      { "rule_set": ["geolocation-!cn","locationcn","Proxylist"], "outbound": "Proxy"}
     ],
     "final": "Final",
     //仅支持 Linux、Windows 和 macOS
