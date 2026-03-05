@@ -1,6 +1,9 @@
 // https://github.com/cloudsurges/sing-box/blob/main/ProxiesProfile.json
-// https://githubusercontent.cloudsurge.store/cloudsurges/sing-box/main/ProxiesProfile.json
+// https://gist.githubusercontent.com/cloudsurges/82253eba39407cf158322758ff94ef1f/raw/singboxprofiles.json
 // https://sing-box.sagernet.org/zh/configuration/
+// https://sing-box.sagernet.org/zh/migration/
+// https://sing-box.sagernet.org/manual/proxy/client/#traffic-bypass-usage-for-chinese-users
+// Applicable To Sing-Box Version 1.12 Universal Edition -V9.1
 
 {
   //日志 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
@@ -15,211 +18,313 @@
   "dns": {
     "servers": [
       //Resolve DNS
-      { "tag": "DNS•Remote", "address": "tls://8.8.8.8", "address_resolver": "Resolve•Local","address_strategy": "prefer_ipv4", "strategy": "prefer_ipv4" ,"detour": "Proxy" },
-      { "tag": "DNS•Local", "address": "h3://dns.alidns.com/dns-query", "address_resolver": "Resolve•Local", "address_strategy": "prefer_ipv4", "strategy": "prefer_ipv4","detour": "direct" },
-      { "tag": "Resolve•Local", "address": "223.5.5.5", "detour": "direct" },
-      { "tag": "Resolve•Remote", "address": "8.8.8.8", "detour": "Proxy" },
-      { "tag": "Block•DNS", "address": "rcode://success" },
-      { "tag": "Fakeip•DNS","address": "fakeip" }
+      //quic://dns.adguard.com,https://dns.quad9.net/dns-query,https://doh.opendns.com/dns-query,https://dns.adguard.com/dns-query,https://cloudflare-dns.com/dns-query,https://dns.google/dns-query,h3://dns.cloudflare.com/dns-query,h3://dns.alidns.com/dns-query,https://dns.alidns.com/dns-query,quic://dns.alidns.com
+      { "tag": "ResolveDNS·Intranet", "type": "udp", "server": "223.5.5.5", "detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain" },
+      { "tag": "ResolveDNS·Internet", "type": "udp", "server": "8.8.8.8", "detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain" },
+
+      { "tag": "DNSResolve·Default", "type": "local", "detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain", "prefer_go": false /* Dial Fields*/},
+      //{ "tag": "DNSResolve·Default", "type": "dhcp"},
+      { "tag": "DNSResolve·Intranet", "type": "quic", "server": "dns.alidns.com", "domain_resolver": "ResolveDNS·Intranet", "detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain" },
+      { "tag": "DNSResolve·Internet", "type": "tls", "server": "8.8.8.8", "domain_resolver": "ResolveDNS·Internet", "detour": "\u901a\u7528\u4ee3\u7406•ProxiesOptions" },
+      //{ "tag": "DNSResolve·System", "type": "resolved", "service": "resolved" },
+      //{ "tag": "DNSResolve·System", "type": "resolved", "service": "resolved", "accept_default_resolvers": true },
+      { "tag": "DNSResolve·Hosts", "type": "hosts", "path": [/*"/etc/hosts","$HOME/.hosts"*/], "predefined": {} },
+      { "tag": "DNSResolve·Fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18" }
     ],
-
-    "disable_cache": false,
-    "disable_expire": false,
-    "independent_cache": false,
-    //"reverse_mapping": true,
-    //"client_subnet": "",
-
     "rules": [
       /*{
-        "inbound": ["mixed-in"],
+       "inbound": [ "mixed-in" ],
         "ip_version": 6,
-        "query_type": ["A","HTTPS",32768],
+        "query_type": [ "A","HTTPS",32768 ],
         "network": "tcp",
-        "auth_user": ["usera","userb"],
-        "protocol": ["tls","http","quic"],
-        "domain": ["test.com"],
-        "domain_suffix": [".cn"],
-        "domain_keyword": ["test"],
-        "domain_regex": ["^stun\\..+"],
-        "geosite": ["cn"],
-        "source_geoip": ["private"],
-        "geoip": ["cn"],
-        "source_ip_cidr": ["10.0.0.0/24","192.168.0.1"],
+        "auth_user": [ "usera","userb" ],
+        "protocol": [ "tls","http","quic" ],
+        "domain": [ "test.com" ],
+        "domain_suffix": [ ".cn" ],
+        "domain_keyword": [ "test" ],
+        "domain_regex": [ "^stun\\..+" ],
+        "source_ip_cidr": [ "10.0.0.0/24","192.168.0.1" ],
         "source_ip_is_private": false,
-        "ip_cidr": ["10.0.0.0/24","192.168.0.1"],
+        "ip_cidr": [ "10.0.0.0/24","192.168.0.1" ],
         "ip_is_private": false,
-        "source_port": [12345],
-        "source_port_range": ["1000:2000",":3000","4000:"],
-        "port": [80,443],
-        "port_range": ["1000:2000",":3000","4000:"],
-        "process_name": ["curl"],
-        "process_path": ["/usr/bin/curl"],
-        "package_name": ["com.termux"],
-        "user": ["sekai"],
-        "user_id": [1000],
+        "ip_accept_any": false,
+        "source_port": [ 12345 ],
+        "source_port_range": [ "1000:2000",":3000","4000:" ],
+        "port": [ 80,443 ],
+        "port_range": [ "1000:2000",":3000","4000:" ],
+        "process_name": [ "curl" ],
+        "process_path": [ "/usr/bin/curl" ],
+        "process_path_regex": [ "^/usr/bin/.+" ],
+        "package_name": [ "com.termux" ],
+        "user": [ "sekai" ],
+        "user_id": [ 1000 ],
         "clash_mode": "direct",
-        "wifi_ssid": ["My WIFI"],
-        "wifi_bssid": ["00:00:00:00:00:00"],
-        //"rule_set": ["geoip-cn","geosite-cn"],
+        "network_type": [ "wifi" ],
+        "network_is_expensive": false,
+        "network_is_constrained": false,
+        "wifi_ssid": [ "My WIFI" ],
+        "wifi_bssid": [ "00:00:00:00:00:00" ],
+        "rule_set": [ "geoip-cn","geosite-cn" ],
+        "rule_set_ip_cidr_match_source": false,
+        "rule_set_ip_cidr_accept_empty": false,
         "invert": false,
-        "outbound": ["direct"],
-        "server": "Domestic",
+        "outbound": [ "direct" ],
+        "action": "route",
+        "server": "local"
         "disable_cache": false,
         "client_subnet": "127.0.0.1/24"
       },*/
-      { "outbound": "any","disable_cache": true,"server": "DNS•Local" },
-      //{ "inbound": "tun-in","query_type": [ "A", "AAAA" ], "rule_set": "geolocation-!cn", "server": "dns-fake", "rewrite_ttl": 999999999 },
+      //{ "wifi_ssid": ["NetRouter"], "server": "DNSResolve·Default", "disable_cache": false },
       //Fake-IP排除内容
-      {
+      /*{
         "type": "logical",
         "mode": "and",
         "rules": [
-          {
-            "domain_suffix": [
-              ".lan",
-              ".localdomain",
-              ".example",
-              ".localhost",
-              ".local"
-            ],
-            //反向排除
-            "invert": true
-          },
-          {
-            "query_type": [
-              "A",
-              "AAAA"
-            ]
-          }
+          { "rule_set": [ "geo-fakeip","geosite-cn","geosite-sitecn","geosite-cnsite","geosite-locationcn" ], "invert": true },
+          { "rule_set": [ "geosite-google","geosite-youtube","geosite-netflix","geosite-telegram","geosite-gfwlist","geo-proxylist" ] },
+          { "query_type": [ "A","AAAA" ] }
         ],
-        "server": "Fakeip•DNS"
-      },
-      { "clash_mode": "direct", "server": "DNS•Local" },
-      { "clash_mode": "global", "server": "DNS•Remote" },
-      { "domain_suffix": [".cn"],"server": "DNS•Local" },
-      { "rule_set": [ "adblock" ], "server": "Block•DNS" },
-      { "rule_set": ["geoip-cn","geosite-cn"],"server": "DNS•Local" },
-      { "rule_set": ["locationcn","geolocation-!cn"],"server": "DNS•Remote"}
+        "action": "route",
+        "server": "DNSResolve·Fakeip"
+      },*/
+      { "clash_mode": "Direct","action": "route","server": "DNSResolve·Default", "strategy": "prefer_ipv4" },
+      { "clash_mode": "Global","action": "route","server": "DNSResolve·Internet", "strategy": "prefer_ipv4" },
+      // "rcode://" success 无错误,format_error 请求格式错误,server_failure 服务器出错,name_error 域名不存在,not_implemented 功能未实现,refused 请求被拒绝
+      { "rule_set": [ "geo-adblock","geo-ads","geo-antiad","geo-adguard" ], "action": "predefined", "rcode": "REFUSED" },
+      { "rule_set": [ "Customize-Direct","geosite-cn","geoip-cn","geosite-sitecn","geoip-ipcn","geosite-cnsite","geoip-cnip","geosite-locationcn" ], "action": "route", "server": "DNSResolve·Intranet", "strategy": "ipv4_only" },
+      { "rule_set": [ "Customize-Proxy","geosite-location!cn" ], "action": "route", "server": "DNSResolve·Internet", "strategy": "prefer_ipv4" },
+      { "rule_set": [ "geosite-google","geosite-youtube","geosite-netflix","geosite-telegram","geosite-gfwlist","geo-proxylist" ], "action": "route", "server": "DNSResolve·Internet", "strategy": "prefer_ipv4", "client_subnet": "114.114.114.114/24" },
+      { "ip_accept_any": true, "server": "DNSResolve·Intranet"}
     ],
-    "fakeip": {
-      "enabled": true,
-      "inet4_range": "198.18.0.1/16",
-      "inet6_range": "fc00::/18"
-    },
-    "final": "DNS•Remote",
     // strategy: prefer_ipv4 prefer_ipv6 ipv4_only ipv6_only
-    "strategy": "prefer_ipv4"
+    "strategy": "prefer_ipv4",
+    "disable_cache": false,
+    "disable_expire": false,
+    "independent_cache": true,
+    "reverse_mapping": true,
+    //"client_subnet": "",
+    "final": "DNSResolve·Intranet"
   },
 
   //入站 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
   "inbounds": [
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "::",
-      "listen_port": 32768,
-      "tcp_fast_open": false,
-      "tcp_multi_path": false,
-      "udp_fragment": false,
-      //"udp_timeout": "5m",
-      "sniff": true,
-      "sniff_override_destination": false,
-      //"udp_disable_domain_unmapping": false,
-      //"sniff_timeout": "300ms",
-      "domain_strategy": "prefer_ipv4"
-      //仅支持 Linux、Android、Windows 和 macOS
-      //"set_system_proxy": false
-    },
     //仅支持Linux和macOS
-    /*
+    //端口建议：Ports with numbers 0–1023 are called system or well-known ports; ports with numbers 1024-49151 are called user or registered ports, and ports with numbers 49152-65535 are called dynamic, private or ephemeral ports.
+    //即：0到1023的端口号被称为众所周知端口（Well-known Ports），用于一些特定的服务或应用程序。1024到49151的端口号被称为注册端口（Registered Ports），用于一些注册的应用程序或服务。49152到65535的端口号被称为动态和/或私有端口（Dynamic and/or Private Ports），用于临时分配或私有网络使用。
+    /*{
+      "type": "direct",
+      "tag": "dns-in",
+      "listen": "::",
+      //"listen_port": 1023,
+      "listen_port": 1024,
+      "network": "udp",
+      "override_address": "8.8.8.8",
+      "override_port": 53,
+      //"users": [{}]
+    },
     {
       "type": "redirect",
       "tag": "redirect-in",
       "listen": "::",
-      "sniff_override_destination": true,
-      "listen_port": 32768,
-      "sniff": true
+      "listen_port": 49151,
+      //"listen_port": 49152,
+      //"users": [{}]
+    },*/
+    {
+      "type": "mixed",
+      "tag": "Mixed-In",
+      "listen": "::",
+      "listen_port": 65535,
+      "tcp_fast_open": true,
+      "tcp_multi_path": true,
+      "udp_fragment": true,
+      //"udp_timeout": "5m",
+      "users": [{}],
+      //仅支持 Linux、Android、Windows 和 macOS,在Android和iOS上需要root权限，要在无特权的Android和iOS上工作，请改用tun.platform.http_proxy。
+      "set_system_proxy": false
     },
-    */
     //仅支持 Linux、Windows和macOS
-
     {
       "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "tun0",
-      "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fdfe:dcba:9876::1/126",
-      //"address": ["172.19.0.1/30","fdfe:dcba:9876::1/126"],
-      //"route_address": ["0.0.0.0/1","128.0.0.0/1","::/1","8000::/1"],
-      //"route_exclude_address": ["192.168.0.0/16","fc00::/7"],
+      "tag": "Tun-In",
+      "interface_name": "Tunnel",
+      "address": ["172.18.0.1/30","fdfe:dcba:9876::1/126"],
       "mtu": 9000,
-      //"gso": false,
       "auto_route": true,
-      "strict_route": true,
-      "endpoint_independent_nat": false,
+      "iproute2_table_index": 2022,
+      "iproute2_rule_index": 9000,
+      "auto_redirect": false,
+      "auto_redirect_input_mark": "0x2023",
+      "auto_redirect_output_mark": "0x2024",
+      "auto_redirect_reset_mark": "0x2025",
+      "auto_redirect_nfqueue": 100,
+      "auto_redirect_iproute2_fallback_rule_index": 32768,
+      "exclude_mptcp": false,
+      "loopback_address": ["172.31.255.1"],
+      "strict_route": false,
+      "route_address": ["0.0.0.0/1","128.0.0.0/1"/*,"::/1","8000::/1"*/],
+      "route_exclude_address": ["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","172.31.255.0/24","fc00::/7"],
+      "route_address_set": ["geoip-telegram","geoip-google"],
+      "route_exclude_address_set": [/*"geoip-private",*/"geoip-cn","geoip-ipcn","geoip-cnip"],
+      "endpoint_independent_nat": true,
       //"udp_timeout": "5m",
       "stack": "system",
       //"stack": "mixed",
       //"include_interface": [ "lan0" ],
       //"exclude_interface": [ "lan1" ],
-      "include_package": [
-        //"com.android.chrome"
-      ],
-      "exclude_package": [
-        //"com.android.captiveportallogin"
-      ],
+      //"include_uid": [ 0 ],
+      //"include_uid_range": [ "1000-99999" ],
+      //"exclude_uid": [1000],
+      //"exclude_uid_range": [ "1000-99999" ],
+      //"include_android_user": [ 0,10 ],
+      //"include_package": [ "com.android.chrome" ],
+      //"exclude_package": [ "com.android.captiveportallogin" ],
+      //在无特权的Android和iOS上工作
       "platform": {
         "http_proxy": {
           "enabled": true,
           "server": "127.0.0.1",
-          "server_port": 32768,
-          "bypass_domain": [],
+          "server_port": 65535,
+          "bypass_domain": ["lan","local","localdomain","localhost","ip6-loopback","ip6-localhost"],
           "match_domain": []
         }
-      },
-      "domain_strategy": "prefer_ipv4",
-      "sniff": true,
-      "sniff_override_destination": false
-    },   
-    //仅支持linux
-    /*
-    {
+      }
+    }
+    //仅支持linux,且需permitted
+    /*{
       "type": "tproxy",
       "tag": "tproxy-in",
-      "listen": "::",
-      "listen_port": 32768,
-      "network": "udp",
+      //"listen": "",
+      "listen": "0.0.0.0",
+      "listen_port": 65535,
+      //"network": "udp",
       //"tcp_fast_open": true,
       //"tcp_multi_path": false,
       //"udp_fragment": true,
-      //"udp_timeout": "5m",
-      "sniff": true,
-      "sniff_override_destination": false
-      //"sniff_timeout": "300ms",
-      //"domain_strategy": "prefer_ipv6"
-    },
-    */
-    {
-      "type": "direct",
-      "tag": "dns-in",
-      "listen": "::",
-      "listen_port": 15353,
-      "network": "udp",
-      "override_address": "8.8.8.8",
-      "override_port": 53,
-      "sniff": true
-    }
+      //"udp_timeout": "5m"
+    }*/
   ],
 
   //路由 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
+  //https://github.com/SagerNet/sing-geosite/tree/rule-set
+  //https://github.com/MetaCubeX/meta-rules-dat/tree/sing/geo/geosite
   "route": {
+    "default_domain_resolver": { "server": "DNSResolve·Default"/*,"rewrite_ttl": 60,"client_subnet": "1.1.1.1"*/ },
+    //"default_domain_resolver": "DNSResolve·Default",
+    //仅支持 Linux、Windows 和 macOS
+    "auto_detect_interface": true,
+    //仅支持 Android
+    //"override_android_vpn": false
+    //仅支持 Linux、Windows 和 macOS,如果设置了 auto_detect_interface 设置，则不生效.
+    //"default_interface": "en0",
+    //仅支持 Linux
+    //"default_mark": 233
     "rule_set": [
       {
-        "tag": "adblock",
+        "type": "inline",
+        "tag": "Customize-Direct",
+        "rules": [
+          {
+            "type": "logical", "mode": "or",
+            "rules": [
+              { "domain": ["www.resilio.com"] },
+              { "domain_suffix": ["test-ipv6.com", "foreca.com", "foreca.net", "onenote.com","watchda.eebbk.net" ]},
+              { "port": [22,4000] }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "Customize-Proxy",
+        "rules": [
+          {
+            "type": "logical", "mode": "or",
+            "rules": [
+              { "domain": ["claude.ai"] },
+              { "domain_suffix": ["update.resilio.com","sync.bench.resilio.com","config.resilio.com","config.getsync.com","services.googleapis.cn","googleapis.cn","xn--ngstr-lra8j.com","weather.com","weatherbug.net","weatherbug.com","api.weatherbug.net","anthropic.com","claude.ai","fastlink.ws","fastlink.cc","fastlink.li"] }
+            ]
+          }
+        ]
+      },
+      {
+        "tag": "geoip-private",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-adblock.srs",
-        "download_detour": "direct",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/privateip.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-private",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/private.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-adblock",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ads-all.srs",
+        //"format": "source",
+        //"url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ads-all.json",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-ads",
+        "type": "remote",
+        "format": "binary",
+        //"url": "https://github.com/SagerNet/sing-geosite/raw/refs/heads/rule-set/geosite-category-ads-all.srs",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/ads.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-antiad",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://anti-ad.net/anti-ad-sing-box.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-adguard",
+        "type": "remote",
+        //"format": "source",
+        "format": "binary",
+        //"url": "https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Sing-box/refs/heads/main/adblock_reject.json",
+        "url": "https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Sing-box/refs/heads/main/adblock_reject.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-fakeip",
+        "type": "remote",
+        //"format": "source",
+        "format": "binary",
+        //"url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/sing-box-ruleset/fakeip-filter.json",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/fakeip-filter.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-adobeactivation",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-adobe-activation.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
+        //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
@@ -228,210 +333,504 @@
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "geosite-cn",
+        "tag": "geosite-sitecn",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
-        //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
-        "download_detour": "direct",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "locationcn",
+        "tag": "geoip-ipcn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-cnsite",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geoip-cnip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/cnip.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-locationcn",
         "type": "remote",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-cn.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "adguard",
+        "tag": "geosite-tracker",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-adguard.srs",
-        "download_detour": "direct",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-public-tracker.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "google",
+        "tag": "geosite-github",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-github.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-apple",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-apple.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-microsoft",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-microsoft.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-x",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-x.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-google",
         "type": "remote",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-google.srs",
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "youtube",
+        "tag": "geoip-google",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/google.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-youtube",
         "type": "remote",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-youtube.srs",
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/youtube.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "telegram",
+        "tag": "geosite-netflix",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-telegram",
         "type": "remote",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-telegram.srs",
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/telegram.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "geolocation-!cn",
+        "tag": "geoip-telegram",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/telegram.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-openai",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-deepmind",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-google-deepmind.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-gemini",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-google-gemini.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-ai!cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-paypal",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/paypal.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-cryptocurrency",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-cryptocurrency.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-gfwlist",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geo-proxylist",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/sing-box-ruleset/proxy.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+        "update_interval": "86400s"
+      },
+      {
+        "tag": "geosite-location!cn",
         "type": "remote",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs",
         //"url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-        "download_detour": "direct",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       },
       {
-        "tag": "Proxylist",
+        "tag": "geosite-!cnlocation",
         "type": "remote",
-        "format": "source",
-        "url": "https://raw.githubusercontent.com/yangchuansheng/sing-box-geosite/main/rule/Global.json",
-        "download_detour": "direct",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/geolocation-!cn.srs",
+        "download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
         "update_interval": "86400s"
       }
     ],
     "rules": [
-      { "type": "logical", "mode": "or", "rules": [ { "protocol": "dns" },{ "port": 53 } ], "outbound": "dns-out" },
-      { "clash_mode": "direct","outbound": "direct" },
-      { "clash_mode": "global","outbound": "GLOBAL" },
-      { "domain": [ "example.com" , ".cn" ],"outbound": "direct" },
-      { "rule_set": ["adblock"], "outbound": "Adblock"},
-      { "rule_set": ["adguard"], "outbound": "Adguard"},
-      //{ "type": "logical", "mode": "or", "rules": [ { "geoip" :["cn","private"] }, { "geosite":["cn","private"] } ], "outbound": "Direct" },
-      { "type": "logical", "mode": "or",
-        "rules": [ {"rule_set": "geoip-cn"} ,{"rule_set": ["geosite-cn"] } ,{"ip_is_private": true} ],
-        "outbound": "direct"
+      { "inbound": ["Tun-In","Mixed-In"], "action": "resolve", "strategy": "prefer_ipv4"/*, "server": "DNSResolve·Intranet", "disable_cache": false, "rewrite_ttl": null, "client_subnet": null*/ },
+      { "inbound": ["Tun-In","Mixed-In"], "action": "sniff"/*, "sniffer": ["http","tls","quic","stun","dns","bittorrent","dtls","ssh","rdp"]*/, "timeout": "1s"},
+      { "type": "logical", "mode": "or", "rules": [ { "protocol": "dns" }, { "port": 53 } ], "action": "hijack-dns" },
+      { "ip_is_private": true, "outbound": "区域·Domestic" },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          { "port": 853 },
+          { "network": "udp", "port": 443 },
+          { "protocol": "stun" }
+        ],
+        "action": "reject"
       },
-      { "rule_set": ["google"], "outbound": "Google"},
-      { "rule_set": ["youtube"], "outbound": "Youtube"},
-      { "rule_set": ["telegram"], "outbound": "Telegram"},
-      { "rule_set": ["geolocation-!cn","locationcn","Proxylist"], "outbound": "Proxy"}
+      { "clash_mode": "Direct", "action": "route", "outbound": "\u76f4\u63a5\u8fde\u63a5•DirectChain" },
+      { "clash_mode": "Global", "action": "route", "outbound": "\u901a\u7528\u4ee3\u7406•ProxiesOptions" },
+      //{ "protocol": "quic","action": "reject" },
+      { "rule_set": ["geo-adblock","geo-ads","geo-antiad","geo-adguard"], "action": "reject", "method": "default", "no_drop": false },
+      { "rule_set": ["geosite-adobeactivation"], "action": "reject", "method": "default", "no_drop": false },
+      { "type": "logical", "mode": "or", "rules": [ { "rule_set": ["Customize-Direct"] },{ "domain_regex": [".router\\.asus\\.com.|.routerlogin\\.com."] } ], "action": "route","outbound": "自定义·Direct" },
+      { "type": "logical", "mode": "or", "rules": [ { "rule_set": ["Customize-Proxy"] }, { "domain_regex": ["download.*\\.resilio\\.com"] } ], "action": "route","outbound": "自定义·Proxy" },
+      {
+        "type": "logical", "mode": "or",
+        "rules": [
+          {"rule_set": ["geoip-private","geosite-private","geosite-cn","geoip-cn","geosite-sitecn","geoip-ipcn","geosite-cnsite","geoip-cnip","geosite-locationcn"] },{"domain_keyword": ["zh-hans"] }, { "domain_suffix": [".cn"] }, { "domain_regex": [".zh-cn."] } ],
+        "action": "route",
+        //"override_address": "","override_port": 0,"network_strategy": "default","fallback_delay": "1500ms","udp_disable_domain_unmapping": true,"udp_connect": true,"udp_timeout": "",
+        "outbound": "区域·Domestic"
+      },
+      { "rule_set": ["geosite-tracker"], "action": "route", "outbound": "应用·Tracker" },
+      { "type": "logical", "mode": "or", "rules": [ { "rule_set": ["geosite-openai","geosite-deepmind","geosite-gemini","geosite-ai!cn"] } ], "action": "route", "outbound": "应用·AI" },
+      { "rule_set": ["geosite-github"], "action": "route", "outbound": "站点·Github" },
+      { "rule_set": ["geosite-apple"], "action": "route", "outbound": "站点·Apple" },
+      { "rule_set": ["geosite-microsoft"], "action": "route", "outbound": "站点·Microsoft" },
+      { "rule_set": ["geosite-x"], "action": "route", "outbound": "站点·X" },
+      { "rule_set": ["geosite-google","geoip-google"], "action": "route", "outbound": "站点·Google" },
+      { "rule_set": ["geosite-youtube"], "action": "route", "outbound": "站点·Youtube" },
+      { "rule_set": ["geosite-netflix"], "action": "route", "outbound": "站点·Netflix" },
+      { "rule_set": ["geosite-cryptocurrency"], "action": "route", "outbound": "应用·Currency" },
+      { "rule_set": ["geosite-paypal"], "action": "route", "outbound": "站点·Paypal" },
+      { "rule_set": ["geosite-telegram","geoip-telegram"], "action": "route", "outbound": "站点·Telegram" },
+      { "rule_set": ["geosite-gfwlist","geo-proxylist"], "action": "route", "outbound": "服务·GFWList" },
+      { "rule_set": ["geosite-location!cn","geosite-!cnlocation"], "action": "route", "outbound": "区域·Foreign" }
     ],
-    "final": "Final",
-    //仅支持 Linux、Windows 和 macOS
-    "auto_detect_interface": true
-    //仅支持 Android
-    //"override_android_vpn": false
-    //仅支持 Linux、Windows 和 macOS,如果设置了 auto_detect_interface 设置，则不生效.
-    //"default_interface": "en0",
-    //仅支持 Linux
-    //"default_mark": 233
+    "final": "范围·Remain"
   },
 
-  //出站 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
+//出站 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
   "outbounds": [
-    { "tag": "Proxy", "type": "selector", "outbounds": [ "Nodelist•Automatic","Nodelist•Manual"],"default": "Nodelist•Automatic","interrupt_exist_connections": false},
-    { "tag": "Direct","type": "selector", "outbounds": [ "direct" ] },
-    { "tag": "Reject", "type": "selector", "outbounds": [ "block" ] },
-    { "tag": "GLOBAL", "type": "selector", "outbounds": [ "Proxy" ] },
+    //直接连接
+    //"domain_resolver": "DNSResolve·Intranet"; network_strategy:["default","hybrid","fallback"]; network_type:["wifi","cellular","ethernet","other"; fallback_delay": "300ms"]
+    { "tag": "\u76f4\u63a5\u8fde\u63a5•DirectChain", "type": "direct", "network_strategy": "fallback", "network_type": "wifi", "fallback_network_type": "cellular", "fallback_delay": "1500ms", "domain_resolver": "DNSResolve·Default" },
+    //通用代理,Unicode编码
+    {"tag":"\u901a\u7528\u4ee3\u7406•ProxiesOptions","type":"selector","outbounds":["\u8ba1\u65f6\u8282\u70b9•Subscribe-Automatic","\u8ba1\u91cf\u8282\u70b9•Measure-Automatic","\u8ba1\u91cf\u8282\u70b9•Measure-Manual","\u624b\u9009\u8282\u70b9•ManualSelection"],"default":"\u8ba1\u65f6\u8282\u70b9•Subscribe-Automatic","interrupt_exist_connections": true},
+    //指向代理,Unicode编码
+    {"tag":"\u6307\u5411\u4ee3\u7406•ProxiesChoices","type":"selector","outbounds":["\u624b\u9009\u8282\u70b9•ManualSelection","\u8ba1\u91cf\u8282\u70b9•Measure-Manual","\u8ba1\u65f6\u8282\u70b9•Subscribe-Automatic","\u8ba1\u91cf\u8282\u70b9•Measure-Automatic"],"default":"\u624b\u9009\u8282\u70b9•ManualSelection","interrupt_exist_connections": true},
+    //特定代理,Unicode编码
+    {"tag":"\u7279\u5b9a\u4ee3\u7406•ProxiesSelection","type":"selector","outbounds":["\u8ba1\u91cf\u8282\u70b9•Measure-Automatic","\u8ba1\u91cf\u8282\u70b9•Measure-Manual","\u624b\u9009\u8282\u70b9•ManualSelection","\u8ba1\u65f6\u8282\u70b9•Subscribe-Automatic"],"default":"\u8ba1\u91cf\u8282\u70b9•Measure-Automatic","interrupt_exist_connections": true},
+    //计时节点
+    {"tag":"\u8ba1\u65f6\u8282\u70b9•Subscribe-Automatic","type":"urltest","outbounds":["动态BGP+IPLC|香港01","动态BGP+IPLC|香港02","动态BGP+IPLC|香港03","动态BGP+IPLC|香港04","动态BGP+IPLC|香港05","动态BGP+IPLC|香港01(原生)","动态BGP+IPLC|香港02(原生)","动态BGP+IPLC|香港03(原生)","动态BGP+IPLC|香港04(原生)","动态BGP+IPLC|香港05(原生)","动态BGP+IPLC|新加坡01(原生)","动态BGP+IPLC|新加坡02(原生)","动态BGP+IPLC|新加坡03(原生)","动态BGP+IPLC|新加坡04(原生)","动态BGP+IPLC|新加坡05(原生)","动态BGP+IPLC|台湾01(原生)","动态BGP+IPLC|台湾02(原生)","动态BGP+IPLC|台湾03(原生)","动态BGP+IPLC|台湾04(原生)","动态BGP+IPLC|台湾05(原生)","动态BGP+IPLC|台湾06(原生)","动态BGP+IPLC|台湾07(原生)","动态BGP+IPLC|台湾08(原生)","动态BGP+IPLC|台湾09(原生)","动态BGP+IPLC|台湾10(原生)","动态BGP+IPLC|日本01(原生)","动态BGP+IPLC|日本02(原生)","动态BGP+IPLC|日本03(原生)","动态BGP+IPLC|日本04(原生)","动态BGP+IPLC|日本05(原生)","动态BGP+IPLC|美国01(原生)","动态BGP+IPLC|美国02(原生)","动态BGP+IPLC|美国03(原生)","动态BGP+IPLC|美国04(原生)","动态BGP+IPLC|美国05(原生)","iplc|广港01","iplc|广港02","iplc|广港03","iplc|广港04","iplc|广港05","iplc|广港-原生01","iplc|广港-原生02","iplc|广港-原生03","iplc|广港-原生04","iplc|广港-原生05","iplc|广新01","iplc|广新02","iplc|广新-原生01","iplc|广新-原生02","iplc|广新-原生03","iplc|广台-原生01","iplc|广台-原生02","iplc|广台-原生03","iplc|广台-原生04","iplc|广台-原生05","iplc|广台-原生06","iplc|广台-原生07","iplc|广台-原生08","iplc|广台-原生09","iplc|广台-原生10","iplc|广日01","iplc|广日02","iplc|广日-原生01","iplc|广日-原生02","iplc|广日-原生03","iplc|广日-原生04","iplc|广日-原生05","iplc|广美-原生01","iplc|广美-原生02","iplc|广美-原生03","iplc|广美-原生04","iplc|广美-原生05","中转|香港01","中转|香港02","中转|香港03","中转|香港04","中转|香港05","中转|香港-原生01","中转|香港-原生02","中转|香港-原生03","中转|香港-原生04","中转|香港-原生05","中转|台湾-原生01","中转|台湾-原生02","中转|台湾-原生03","中转|台湾-原生04","中转|台湾-原生05","中转|台湾-原生06","中转|台湾-原生07","中转|台湾-原生08","中转|台湾-原生09","中转|台湾-原生10","中转|新加坡01","中转|新加坡02","中转|新加坡03","中转|日本01","中转|日本02","中转|日本03","中转|日本04","中转|日本05","中转|韩国01","中转|韩国02","中转|韩国03","中转|美国01","中转|美国02","中转|美国03","中转|美国04","中转|美国05","中转|加拿大01","Anycast|香港","Anycast|新加坡","Anycast|日本","Anycast|台湾","Anycast|泰国","Anycast|美国","Anycast|英国","Anycast|德国","Anycast|加拿大","Anycast|韩国","Anycast|俄罗斯","Anycast|马来西亚","Anycast|印度","Anycast|法国","Anycast|阿根廷","Anycast|巴西","Anycast|土耳其","Anycast|澳大利亚"],"url": "https://www.gstatic.com/generate_204","interval": "180s","tolerance": 50,"idle_timeout": "30m","interrupt_exist_connections":true},
+    //计量节点-自动
+    {"tag":"\u8ba1\u91cf\u8282\u70b9•Measure-Automatic","type":"urltest","outbounds":["🇭🇰LT香港01","🇭🇰LT香港02","🇭🇰LT香港03","🇭🇰LT香港04","🇭🇰LT香港05","🇭🇰LT香港06","🇯🇵LT日本01","🇯🇵LT日本02","🇸🇬LT新加坡01","🇸🇬LT新加坡02","🇸🇬LT新加坡03","🇸🇬LT新加坡04","🇺🇸LT美国01","🇺🇸LT美国02","🇺🇸LT美国03","🇺🇸LT美国04","XFLTD🇭🇰香港01","XFLTD🇭🇰香港02","XFLTD🇭🇰香港03","XFLTD🇭🇰香港04","XFLTD🇭🇰香港05","XFLTD🇭🇰香港06","XFLTD🇹🇼台湾01","XFLTD🇹🇼台湾02","XFLTD🇸🇬新加坡01","XFLTD🇸🇬新加坡02","XFLTD🇸🇬新加坡03","XFLTD🇸🇬新加坡04","XFLTD🇸🇬新加坡05","XFLTD🇯🇵日本01","XFLTD🇯🇵日本02","XFLTD🇯🇵日本03","XFLTD🇯🇵日本04","XFLTD🇯🇵日本05","XFLTD🇺🇸美国01","XFLTD🇺🇸美国02","XFLTD🇺🇸美国03","XFLTD🇺🇸美国04","XFLTD🇨🇦加拿大01","XFLTD🇰🇷韩国01","XFLTD🇮🇩印尼01"],"url": "https://www.gstatic.com/generate_204","interval": "180s","tolerance": 50,"idle_timeout": "30m","interrupt_exist_connections":true},
+    //计量节点-手动
+    {"tag":"\u8ba1\u91cf\u8282\u70b9•Measure-Manual","type":"selector","outbounds":["🇭🇰LT香港01","🇭🇰LT香港02","🇭🇰LT香港03","🇭🇰LT香港04","🇭🇰LT香港05","🇭🇰LT香港06","🇯🇵LT日本01","🇯🇵LT日本02","🇸🇬LT新加坡01","🇸🇬LT新加坡02","🇸🇬LT新加坡03","🇸🇬LT新加坡04","🇺🇸LT美国01","🇺🇸LT美国02","🇺🇸LT美国03","🇺🇸LT美国04","XFLTD🇭🇰香港01","XFLTD🇭🇰香港02","XFLTD🇭🇰香港03","XFLTD🇭🇰香港04","XFLTD🇭🇰香港05","XFLTD🇭🇰香港06","XFLTD🇹🇼台湾01","XFLTD🇹🇼台湾02","XFLTD🇸🇬新加坡01","XFLTD🇸🇬新加坡02","XFLTD🇸🇬新加坡03","XFLTD🇸🇬新加坡04","XFLTD🇸🇬新加坡05","XFLTD🇯🇵日本01","XFLTD🇯🇵日本02","XFLTD🇯🇵日本03","XFLTD🇯🇵日本04","XFLTD🇯🇵日本05","XFLTD🇺🇸美国01","XFLTD🇺🇸美国02","XFLTD🇺🇸美国03","XFLTD🇺🇸美国04","XFLTD🇨🇦加拿大01","XFLTD🇰🇷韩国01","XFLTD🇮🇩印尼01"],"default": "","interrupt_exist_connections": true},
+    //全手动选择节点
+    {"tag":"\u624b\u9009\u8282\u70b9•ManualSelection","type":"selector","outbounds":["动态BGP+IPLC|香港01","动态BGP+IPLC|香港02","动态BGP+IPLC|香港03","动态BGP+IPLC|香港04","动态BGP+IPLC|香港05","动态BGP+IPLC|香港01(原生)","动态BGP+IPLC|香港02(原生)","动态BGP+IPLC|香港03(原生)","动态BGP+IPLC|香港04(原生)","动态BGP+IPLC|香港05(原生)","动态BGP+IPLC|新加坡01(原生)","动态BGP+IPLC|新加坡02(原生)","动态BGP+IPLC|新加坡03(原生)","动态BGP+IPLC|新加坡04(原生)","动态BGP+IPLC|新加坡05(原生)","动态BGP+IPLC|台湾01(原生)","动态BGP+IPLC|台湾02(原生)","动态BGP+IPLC|台湾03(原生)","动态BGP+IPLC|台湾04(原生)","动态BGP+IPLC|台湾05(原生)","动态BGP+IPLC|台湾06(原生)","动态BGP+IPLC|台湾07(原生)","动态BGP+IPLC|台湾08(原生)","动态BGP+IPLC|台湾09(原生)","动态BGP+IPLC|台湾10(原生)","动态BGP+IPLC|日本01(原生)","动态BGP+IPLC|日本02(原生)","动态BGP+IPLC|日本03(原生)","动态BGP+IPLC|日本04(原生)","动态BGP+IPLC|日本05(原生)","动态BGP+IPLC|美国01(原生)","动态BGP+IPLC|美国02(原生)","动态BGP+IPLC|美国03(原生)","动态BGP+IPLC|美国04(原生)","动态BGP+IPLC|美国05(原生)","iplc|广港01","iplc|广港02","iplc|广港03","iplc|广港04","iplc|广港05","iplc|广港-原生01","iplc|广港-原生02","iplc|广港-原生03","iplc|广港-原生04","iplc|广港-原生05","iplc|广新01","iplc|广新02","iplc|广新-原生01","iplc|广新-原生02","iplc|广新-原生03","iplc|广台-原生01","iplc|广台-原生02","iplc|广台-原生03","iplc|广台-原生04","iplc|广台-原生05","iplc|广台-原生06","iplc|广台-原生07","iplc|广台-原生08","iplc|广台-原生09","iplc|广台-原生10","iplc|广日01","iplc|广日02","iplc|广日-原生01","iplc|广日-原生02","iplc|广日-原生03","iplc|广日-原生04","iplc|广日-原生05","iplc|广美-原生01","iplc|广美-原生02","iplc|广美-原生03","iplc|广美-原生04","iplc|广美-原生05","中转|香港01","中转|香港02","中转|香港03","中转|香港04","中转|香港05","中转|香港-原生01","中转|香港-原生02","中转|香港-原生03","中转|香港-原生04","中转|香港-原生05","中转|台湾-原生01","中转|台湾-原生02","中转|台湾-原生03","中转|台湾-原生04","中转|台湾-原生05","中转|台湾-原生06","中转|台湾-原生07","中转|台湾-原生08","中转|台湾-原生09","中转|台湾-原生10","中转|新加坡01","中转|新加坡02","中转|新加坡03","中转|日本01","中转|日本02","中转|日本03","中转|日本04","中转|日本05","中转|韩国01","中转|韩国02","中转|韩国03","中转|美国01","中转|美国02","中转|美国03","中转|美国04","中转|美国05","中转|加拿大01","Anycast|香港","Anycast|新加坡","Anycast|日本","Anycast|台湾","Anycast|泰国","Anycast|美国","Anycast|英国","Anycast|德国","Anycast|加拿大","Anycast|韩国","Anycast|俄罗斯","Anycast|马来西亚","Anycast|印度","Anycast|法国","Anycast|阿根廷","Anycast|巴西","Anycast|土耳其","Anycast|澳大利亚","🇭🇰LT香港01","🇭🇰LT香港02","🇭🇰LT香港03","🇭🇰LT香港04","🇭🇰LT香港05","🇭🇰LT香港06","🇯🇵LT日本01","🇯🇵LT日本02","🇸🇬LT新加坡01","🇸🇬LT新加坡02","🇸🇬LT新加坡03","🇸🇬LT新加坡04","🇺🇸LT美国01","🇺🇸LT美国02","🇺🇸LT美国03","🇺🇸LT美国04","XFLTD🇭🇰香港01","XFLTD🇭🇰香港02","XFLTD🇭🇰香港03","XFLTD🇭🇰香港04","XFLTD🇭🇰香港05","XFLTD🇭🇰香港06","XFLTD🇹🇼台湾01","XFLTD🇹🇼台湾02","XFLTD🇸🇬新加坡01","XFLTD🇸🇬新加坡02","XFLTD🇸🇬新加坡03","XFLTD🇸🇬新加坡04","XFLTD🇸🇬新加坡05","XFLTD🇯🇵日本01","XFLTD🇯🇵日本02","XFLTD🇯🇵日本03","XFLTD🇯🇵日本04","XFLTD🇯🇵日本05","XFLTD🇺🇸美国01","XFLTD🇺🇸美国02","XFLTD🇺🇸美国03","XFLTD🇺🇸美国04","XFLTD🇨🇦加拿大01","XFLTD🇰🇷韩国01","XFLTD🇮🇩印尼01"],"default": "","interrupt_exist_connections": true},
 
-    //{ "tag": "Proxies•Subscribe", "type": "selector", "outbounds": [ "" ] },
-    { "type": "direct","tag": "direct" },
-    { "type": "block","tag": "block" },
-    { "type": "dns","tag": "dns-out" },
+    {"type": "selector", "tag": "自定义·Direct","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    {"type": "selector", "tag": "自定义·Proxy","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "区域·Domestic","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "应用·Tracker","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "应用·AI","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u6307\u5411\u4ee3\u7406•ProxiesChoices","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Github","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Apple","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Microsoft","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·X","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Google","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Youtube","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Netflix","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u7279\u5b9a\u4ee3\u7406•ProxiesSelection","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Telegram","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "应用·Currency","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "站点·Paypal","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "服务·GFWList","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u901a\u7528\u4ee3\u7406•ProxiesOptions","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "区域·Foreign","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
+    { "type": "selector", "tag": "范围·Remain","outbounds": ["\u76f4\u63a5\u8fde\u63a5•DirectChain","\u901a\u7528\u4ee3\u7406•ProxiesOptions","\u6307\u5411\u4ee3\u7406•ProxiesChoices","\u7279\u5b9a\u4ee3\u7406•ProxiesSelection"],"default": "\u76f4\u63a5\u8fde\u63a5•DirectChain","interrupt_exist_connections": true},
 
-    { "type": "urltest", "tag": "Nodelist•Automatic", "outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08","IEPL|香港1","IEPL|香港2","IEPL|香港3","IEPL|新加坡","IEPL|台湾"],"url": "https://www.gstatic.com/generate_204","interval": "3m","tolerance": 50,"idle_timeout": "30m","interrupt_exist_connections":false},
-    { "type": "selector", "tag": "Nodelist•Manual","outbounds": ["HongKong01","HongKong02","HongKong03","HongKong04","HongKong05","HongKong06","HongKong07","HongKong08","Taiwan01","Taiwan02","Taiwan03","Taiwan04","Taiwan05","Taiwan06","Taiwan07","Taiwan08","IEPL|香港1","IEPL|香港2","IEPL|香港3","IEPL|新加坡","IEPL|台湾"],"default": "","interrupt_exist_connections": false},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57601,"tag": "动态BGP+IPLC|香港01","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57602,"tag": "动态BGP+IPLC|香港02","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57603,"tag": "动态BGP+IPLC|香港03","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57604,"tag": "动态BGP+IPLC|香港04","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57605,"tag": "动态BGP+IPLC|香港05","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57611,"tag": "动态BGP+IPLC|香港01(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57612,"tag": "动态BGP+IPLC|香港02(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57613,"tag": "动态BGP+IPLC|香港03(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57614,"tag": "动态BGP+IPLC|香港04(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57615,"tag": "动态BGP+IPLC|香港05(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57621,"tag": "动态BGP+IPLC|新加坡01(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57622,"tag": "动态BGP+IPLC|新加坡02(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57623,"tag": "动态BGP+IPLC|新加坡03(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57624,"tag": "动态BGP+IPLC|新加坡04(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57625,"tag": "动态BGP+IPLC|新加坡05(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57631,"tag": "动态BGP+IPLC|台湾01(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57632,"tag": "动态BGP+IPLC|台湾02(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57633,"tag": "动态BGP+IPLC|台湾03(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57634,"tag": "动态BGP+IPLC|台湾04(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57635,"tag": "动态BGP+IPLC|台湾05(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57636,"tag": "动态BGP+IPLC|台湾06(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57637,"tag": "动态BGP+IPLC|台湾07(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57638,"tag": "动态BGP+IPLC|台湾08(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57639,"tag": "动态BGP+IPLC|台湾09(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57640,"tag": "动态BGP+IPLC|台湾10(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57641,"tag": "动态BGP+IPLC|日本01(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57642,"tag": "动态BGP+IPLC|日本02(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57643,"tag": "动态BGP+IPLC|日本03(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57644,"tag": "动态BGP+IPLC|日本04(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57645,"tag": "动态BGP+IPLC|日本05(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57651,"tag": "动态BGP+IPLC|美国01(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57652,"tag": "动态BGP+IPLC|美国02(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57653,"tag": "动态BGP+IPLC|美国03(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57654,"tag": "动态BGP+IPLC|美国04(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"password": "ykns8hsv8p8","server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 57655,"tag": "动态BGP+IPLC|美国05(原生)","type": "shadowsocks","method": "chacha20-ietf-poly1305"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59911,"tag": "iplc|广港01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59912,"tag": "iplc|广港02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59913,"tag": "iplc|广港03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59914,"tag": "iplc|广港04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59915,"tag": "iplc|广港05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59921,"tag": "iplc|广港-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59922,"tag": "iplc|广港-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59923,"tag": "iplc|广港-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59924,"tag": "iplc|广港-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59925,"tag": "iplc|广港-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59931,"tag": "iplc|广新01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59932,"tag": "iplc|广新02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59933,"tag": "iplc|广新-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59934,"tag": "iplc|广新-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59935,"tag": "iplc|广新-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59941,"tag": "iplc|广台-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59942,"tag": "iplc|广台-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59943,"tag": "iplc|广台-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59944,"tag": "iplc|广台-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59945,"tag": "iplc|广台-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59946,"tag": "iplc|广台-原生06","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59947,"tag": "iplc|广台-原生07","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59948,"tag": "iplc|广台-原生08","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59949,"tag": "iplc|广台-原生09","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59950,"tag": "iplc|广台-原生10","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59951,"tag": "iplc|广日01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59952,"tag": "iplc|广日02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59956,"tag": "iplc|广日-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59957,"tag": "iplc|广日-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59958,"tag": "iplc|广日-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59959,"tag": "iplc|广日-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59960,"tag": "iplc|广日-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59971,"tag": "iplc|广美-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59972,"tag": "iplc|广美-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59973,"tag": "iplc|广美-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59974,"tag": "iplc|广美-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 59975,"tag": "iplc|广美-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42101,"tag": "中转|香港01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42102,"tag": "中转|香港02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42103,"tag": "中转|香港03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42104,"tag": "中转|香港04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42105,"tag": "中转|香港05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42111,"tag": "中转|香港-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42112,"tag": "中转|香港-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42113,"tag": "中转|香港-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42114,"tag": "中转|香港-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42115,"tag": "中转|香港-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42121,"tag": "中转|台湾-原生01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42122,"tag": "中转|台湾-原生02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42123,"tag": "中转|台湾-原生03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42124,"tag": "中转|台湾-原生04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42125,"tag": "中转|台湾-原生05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42126,"tag": "中转|台湾-原生06","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42127,"tag": "中转|台湾-原生07","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42128,"tag": "中转|台湾-原生08","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42129,"tag": "中转|台湾-原生09","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42130,"tag": "中转|台湾-原生10","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42131,"tag": "中转|新加坡01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42132,"tag": "中转|新加坡02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42133,"tag": "中转|新加坡03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42141,"tag": "中转|日本01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42142,"tag": "中转|日本02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42143,"tag": "中转|日本03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42144,"tag": "中转|日本04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42145,"tag": "中转|日本05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42151,"tag": "中转|韩国01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42152,"tag": "中转|韩国02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42153,"tag": "中转|韩国03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42161,"tag": "中转|美国01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42162,"tag": "中转|美国02","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42163,"tag": "中转|美国03","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42164,"tag": "中转|美国04","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42165,"tag": "中转|美国05","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 42171,"tag": "中转|加拿大01","type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51517,"tag": "Anycast|香港","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51511,"tag": "Anycast|新加坡","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51512,"tag": "Anycast|日本","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51514,"tag": "Anycast|台湾","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51527,"tag": "Anycast|泰国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51513,"tag": "Anycast|美国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51518,"tag": "Anycast|英国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51519,"tag": "Anycast|德国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51520,"tag": "Anycast|加拿大","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51522,"tag": "Anycast|韩国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51525,"tag": "Anycast|俄罗斯","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51523,"tag": "Anycast|马来西亚","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51524,"tag": "Anycast|印度","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51526,"tag": "Anycast|法国","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51529,"tag": "Anycast|阿根廷","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51530,"tag": "Anycast|巴西","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51531,"tag": "Anycast|土耳其","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
+{"server": "sd78sf2kdpx5s.e7mbqhx.com","server_port": 51521,"tag": "Anycast|澳大利亚","transport": {"headers": {"Host": ["sd78sf2kdpx5s.e7mbqhx.com"]},"path": "/564dfa20/","type": "ws"},"type": "vmess","security": "auto","uuid": "abf42766-4eef-30c4-a890-ed5199a8cb89"},
 
-    { "type": "selector", "tag": "Adblock","outbounds": ["Reject","Direct"],"default": "Reject","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Adguard","outbounds": ["Reject","Direct"],"default": "Reject","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Domestic","outbounds": ["Direct","Proxy"],"default": "Direct","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Google","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Youtube","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Telegram","outbounds": ["Proxy","Direct"],"default": "Proxy","interrupt_exist_connections": false},
-    { "type": "selector", "tag": "Final","outbounds": ["Proxy","Direct"],"default": "Direct","interrupt_exist_connections": false},
 
-    { "tag": "HongKong01", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20001, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong02", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20002, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong03", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20003, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong04", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20004, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong05", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20005, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong06", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20006, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong07", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20007, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "HongKong08", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20008, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan01", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20011, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan02", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20012, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan03", "type": "trojan","server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20013, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true,"fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan04", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20014, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan05", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20015, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan06", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20016, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan07", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20017, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "Taiwan08", "type": "trojan", "server": "oss-cn-guangzhou.solidigm-nvme.com", "server_port": 20018, "password": "A630099E-82E0-5FF3-6EB5-B3ED9A9EF136",
-      "tls": { "enabled": true, "server_name": "mmbiz.qpic.cn", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } }
-    },
-    { "tag": "IEPL|香港1", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10931, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
-    { "tag": "IEPL|香港2", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10920, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
-    { "tag": "IEPL|香港3", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10933, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
-    { "tag": "IEPL|新加坡", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10934, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" },
-    { "tag": "IEPL|台湾", "type": "shadowsocks", "server": "gd.bjnetwork.cyou", "server_port": 10936, "method": "aes-128-gcm", "password": "d3f357af-1638-479b-b4d2-cb5af9ff152e" }  
+
+    {"tag":"🇭🇰LT香港01","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27011, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇭🇰LT香港02","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27013, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇭🇰LT香港03","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27015, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇭🇰LT香港04","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27017, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇭🇰LT香港05","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27019, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇭🇰LT香港06","type":"trojan", "server":"lt-hkg.ltdns.top","server_port": 27111, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇯🇵LT日本01","type":"trojan", "server":"s.jpn.ltltltltltltlt.top","server_port": 27031, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇯🇵LT日本02","type":"trojan", "server":"s.jpn.ltltltltltltlt.top","server_port": 27033, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇸🇬LT新加坡01","type":"trojan", "server":"s.sin.ltltltltltltlt.top","server_port": 27041, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇸🇬LT新加坡02","type":"trojan", "server":"s.sin.ltltltltltltlt.top","server_port": 27043, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇸🇬LT新加坡03","type":"trojan", "server":"s.sin.ltltltltltltlt.top","server_port": 27044, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇸🇬LT新加坡04","type":"trojan", "server":"s.sin.ltltltltltltlt.top","server_port": 27045, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇺🇸LT美国01","type":"trojan", "server":"s.usa.ltltltltltltlt.top","server_port": 27051, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇺🇸LT美国02","type":"trojan", "server":"s.usa.ltltltltltltlt.top","server_port": 27053, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇺🇸LT美国03","type":"trojan", "server":"s.usa.ltltltltltltlt.top","server_port": 27055, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+    {"tag":"🇺🇸LT美国04","type":"trojan", "server":"s.usa.ltltltltltltlt.top","server_port": 27057, "password":"f514bead-5e1f-4491-a848-532715118b96", "tls": { "enabled": true, "server_name": "www.ithome.com", "insecure": true, "utls": { "enabled": true, "fingerprint": "chrome" } },"network":"tcp","tcp_fast_open":false },
+
+    {"type":"trojan","tag":"XFLTD🇭🇰香港01","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12001,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇭🇰香港02","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12002,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇭🇰香港03","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12003,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇭🇰香港04","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12004,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇭🇰香港05","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12005,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇭🇰香港06","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12006,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇹🇼台湾01","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12011,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇹🇼台湾02","server":"548a3f1d.sched.sma-dk.ali-oss.cn","server_port":12012,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇸🇬新加坡01","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12021,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇸🇬新加坡02","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12022,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇸🇬新加坡03","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12023,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇸🇬新加坡04","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12024,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇸🇬新加坡05","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12025,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇯🇵日本01","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12031,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇯🇵日本02","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12032,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇯🇵日本03","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12033,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇯🇵日本04","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12034,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇯🇵日本05","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12035,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇺🇸美国01","server":"1ab9008c.sched.sma-dk.ali-oss.cn","server_port":12051,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇺🇸美国02","server":"1ab9008c.sched.sma-dk.ali-oss.cn","server_port":12052,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇺🇸美国03","server":"1ab9008c.sched.sma-dk.ali-oss.cn","server_port":12053,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇺🇸美国04","server":"1ab9008c.sched.sma-dk.ali-oss.cn","server_port":12054,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇨🇦加拿大01","server":"1ab9008c.sched.sma-dk.ali-oss.cn","server_port":12077,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇰🇷韩国01","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12041,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false},
+    {"type":"trojan","tag":"XFLTD🇮🇩印尼01","server":"64f890ce.sched.sma-dk.ali-oss.cn","server_port":12061,"password":"38a14b98-26cd-4d6a-8b4d-a0a120ade95f","tls":{"enabled":true,"server_name":"cdn.alibaba.com","insecure":true},"network":"tcp","tcp_fast_open":false}
   ],
 
   //实验性 ••• ··· --- ••• ··· ---  ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· --- ••• ··· ---
   "experimental": {
     "cache_file": {
       "enabled": true,
-      //"path": "",
-      //"cache_id": "",
+      "path": "cache.db",
+      "cache_id": "",
       "store_fakeip": true,
-      "store_rdrc": false
-      //"rdrc_timeout": ""
+      "store_rdrc": true,
+      "rdrc_timeout": "7d"
     },
     "clash_api": {
-      "external_controller": "127.0.0.1:19090",
-      "external_ui": "ui",
-      "secret": "",
+      "external_controller": "127.0.0.1:49150",
+      "external_ui": "external-ui",
       "external_ui_download_url": "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
-      "external_ui_download_detour": "direct",
-      "default_mode": "rule"
-      // Deprecated
-      //"store_mode": false,
-      //"store_selected": false,
-      //"store_fakeip": false,
-      //"cache_file": "",
-      //"cache_id": ""
+      "external_ui_download_detour": "\u76f4\u63a5\u8fde\u63a5•DirectChain",
+      "secret": "",
+      "default_mode": "Rule",
+      "access_control_allow_origin": ["*"],
+      "access_control_allow_private_network": true
     },
     "v2ray_api": {
     }
-  }
+    }
 }
